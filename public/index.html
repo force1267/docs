@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    <link href="/docs_app_public/sunflower.css" rel="stylesheet">
+    <link href="/docs_app_public/quill.snow.css" rel="stylesheet">
+    <style>
+        .container {
+            background-color : rgb(245, 245, 245);
+            margin: 12%;
+            margin-top: 0px;
+            margin-bottom: 15px;
+            border-radius: 15px;
+            align-content: center;
+        }
+        .index {
+            align-self: center;
+            color: #666;
+            font-family: 'Sunflower', sans-serif;
+            font-size: 40px;
+            font-weight: 300;
+            display: inline-block;
+            width: 30%;
+            margin: 1% 35% 1% 35%;
+            border-radius: 25px;
+            text-align: center;
+        }
+        a.index:hover {
+            transition-duration: 200ms;
+            background-color: rgb(202, 208, 216);
+        }
+        h1.index {
+            width: 100%;
+            margin: 0% 0% 0% 0%;
+        }
+        .ql-toolbar {
+            margin-top: 7%;
+            text-align: right;
+        }
+        /* size dropdowns */
+        .ql-picker-label {
+            text-align: left;
+        }
+        /* placeholder */
+        .ql-editor.ql-blank::before {
+            text-align: right;
+            font-size: large;
+            font-family: 'Sunflower', sans-serif;
+        }
+
+
+        /* add quill fonts */
+        /* Set dropdown font-families */
+        #toolbar-container .ql-font span[data-label="sunflower"]::before {
+            font-family: "Sunflower";
+        }
+        /* Set content font-families */
+        .ql-font-sunflower {
+            font-family: "Sunflower";
+        }
+        .ql-save {
+            background: url("/docs_app_public/save.ico") left top;
+        }
+    </style>
+</head>
+<body>
+    <script src="/docs_app_public/quill.min.js"></script>
+    <div id="ws" class="container">
+        <ssr>
+    </div>
+
+    <script>
+        // Add fonts to whitelist
+        var Font = Quill.import('formats/font');
+        // We do not add Aref Ruqaa since it is the default
+        Font.whitelist = ['Sunflower'];
+        Quill.register(Font, true);
+        let save = document.querySelector('.ql-save')
+        console.log(save)
+        if(save) {
+            let saveFn = e => {
+                let editor = document.querySelector("#editor");
+                if(editor) {
+                    const content = editor.innerHTML;
+                    const id = location.href.split('/')[location.href.split('/').length - 1];
+                    fetch("/docs_app_update", {
+                        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+                        mode: 'cors', // no-cors, *cors, same-origin
+                        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+                        credentials: 'same-origin', // include, *same-origin, omit
+                        headers: {
+                            'Content-Type': 'application/json'
+                            // 'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        redirect: 'follow', // manual, *follow, error
+                        referrer: 'no-referrer', // no-referrer, *client
+                        body: JSON.stringify({ id, content }) // body data type must match "Content-Type" header
+                    }).then(r => r.json()).then(r => {
+                        if(r === "ok") {
+                            console.log("saved")
+                        } else {
+                            console.log("not saved", r)
+                            alert("not saved")
+                        }
+                    })
+                }
+            }
+
+            save.addEventListener('click', saveFn);
+            document.addEventListener('keydown', e => {
+                if(e.ctrlKey && e.key === "s") {
+                    e.preventDefault();
+                    saveFn();
+                }
+            })
+        }
+    </script>
+</body>
+</html>
